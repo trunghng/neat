@@ -1,1 +1,2 @@
-# neat
+## NEAT implementation
+[1] Kenneth O. Stanley & Risto Miikkulainen. [Evolving Neural Networks Through Augmenting Topologies](https://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf). Evolutionary Computation 10, no.2 (2002): 99-127.
