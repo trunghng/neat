@@ -46,7 +46,6 @@ class InnovationDB:
         self.db = dict
         self.global_innovation_id = 0
         self.current_node_id = 0
-        self.current_connection_id = 0
 
 
     def next_innovation(self) -> int:
@@ -57,11 +56,6 @@ class InnovationDB:
     def next_node(self) -> int:
         self.current_node_id += 1
         return self.current_node_id
-
-
-    def nex_connection(self) -> int:
-        self.current_connection_id += 1
-        return self.current_connection_id
 
 
     def create(self, 
@@ -81,44 +75,29 @@ class InnovationDB:
 
         Returns
         -------
-        node_id: current node/connection ID
         innovation_id: ID of the new created innovation, 
             or an old ID if it already exists
+        node_id: current node/connection ID
         '''
         if node_type == NodeType.INPUT or node_type == NodeType.OUTPUT:
             in_node = out_node = -1
             innovation_id = self.next_innovation()
         else:
-            innovation_id = self.contains(innovation_type, in_node, out_node)
+            innovation_id = self.contains(in_node, out_node, node_e)
 
+            # Innovation not in DB
             if innovation_id == -1:
                 innovation_id = self.next_innovation()
+                innovation = Innovation(innovation_id, innovation_type, 
+                    in_node, out_node, node_id, node_type)
+                self.db[(innovation_type, in_node, out_node)] = innovation
 
         if innovation_type == InnovationType.NEW_NODE:
             node_id = self.next_node()
         else:
-            node_id = self.next_connection()
+            node_id = -1
 
-        if innovation_id != -1:
-            innovation = Innovation(innovation_id, innovation_type, 
-                in_node, out_node, node_id, node_type)
-            self.add(innovation)
-
-        return node_id, innovation_id
-
-
-    def add(self, innovation: Innovation) -> None:
-        '''
-        Add an innovation to the DB
-        '''
-        inv_type, inn, outn = innovation.innovation_type, innovation.in_node, innovation.out_node
-        if inv_type not in self.db:
-            self.db[inv_type] = dict()
-        if inn not in self.db[inv_type]:
-            self.db[inv_type][inn] = dict()
-        if outn not in self.db[inv_type][inn]:
-            self.db[inv_type][inn][outn] = dict()
-        self.db[inv_type][inn][outn][node_id] = innovation
+        return innovation_id, node_id
 
 
     def contains(self,
@@ -136,7 +115,7 @@ class InnovationDB:
 
         Returns
         -------
-            ID of the innovation if it is in the DB, otherwise return -1
+        ID of the innovation if it is in the DB, -1 otherwise
         '''
         innovation = self.db[innovation_type][in_node][out_node]
         if innovation:
